@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: supportpilot
+    runtime: docker
+    plan: free
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_ENV
+        value: production
+      - key: PORT
+        value: "8788"
+      - key: JWT_SECRET
+        generateValue: true
+      - key: APP_SECRET
+        generateValue: true
+      - key: VECTOR_DATABASE_URL
+        sync: false

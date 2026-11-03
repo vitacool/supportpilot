@@ -1,5 +1,11 @@
 # SupportPilot · AI 客服协同平台
 
+[![CI](https://github.com/vitacool/supportpilot/actions/workflows/ci.yml/badge.svg)](https://github.com/vitacool/supportpilot/actions/workflows/ci.yml)
+[![Case Study](https://img.shields.io/badge/Case%20Study-GitHub%20Pages-7d97ff)](https://vitacool.github.io/supportpilot/)
+[![License: MIT](https://img.shields.io/badge/License-MIT-43e0a2.svg)](LICENSE)
+
+**在线案例页：https://vitacool.github.io/supportpilot/**
+
 **让 AI 处理重复问题，让客服专注复杂关系。**
 
 SupportPilot 是一套面向企业客服团队的 AI 工单平台：AI 自动分诊、检索知识库、生成带引用的回复草稿；客服审核后发送；SLA、CSAT、AI 采纳率和 RAG 质量全部可观测。
@@ -171,6 +177,8 @@ Compose 启动：
 - `vector-db`：`pgvector/pgvector:pg17`
 
 业务元数据仍在 SQLite volume；向量数据在 pgvector volume。多实例部署需要把业务库迁移到 PostgreSQL，并外置索引队列。
+
+更完整的 Render / Railway / Fly.io / 自有服务器部署步骤见 [docs/DEPLOYMENT.md](docs/DEPLOYMENT.md)。
 
 ## API 概览
 

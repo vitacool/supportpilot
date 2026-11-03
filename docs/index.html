@@ -1,0 +1,341 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>SupportPilot · AI 客服协同平台</title>
+  <meta name="description" content="SupportPilot 是一套完整的人机协同 AI 客服平台：工单状态机、SLA、RAG 引用、AI 草稿审核与评测看板。" />
+  <meta property="og:title" content="SupportPilot · AI 客服协同平台" />
+  <meta property="og:description" content="让 AI 处理重复问题，让客服专注复杂关系。" />
+  <meta property="og:image" content="screenshots/inbox.png" />
+  <meta name="theme-color" content="#0b1424" />
+  <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 64 64'%3E%3Crect width='64' height='64' rx='15' fill='%230b1424'/%3E%3Cpath d='M13 22c0-3 2-5 5-5h28c3 0 5 2 5 5v14c0 3-2 5-5 5H32l-9 7v-7h-5c-3 0-5-2-5-5V22Z' fill='%237d97ff'/%3E%3C/svg%3E" />
+  <style>
+    :root {
+      --bg: #08111f;
+      --bg2: #0d1a2d;
+      --panel: #101f35;
+      --line: rgba(255,255,255,.1);
+      --text: #f4f7ff;
+      --muted: #92a2bc;
+      --accent: #7d97ff;
+      --green: #43e0a2;
+      --amber: #f6b94a;
+      --radius: 18px;
+      --font: "Inter", "SF Pro Text", -apple-system, BlinkMacSystemFont, "Segoe UI", "PingFang SC", "Microsoft YaHei", sans-serif;
+      --mono: "SFMono-Regular", "Cascadia Code", Consolas, monospace;
+    }
+    * { box-sizing: border-box; }
+    html { scroll-behavior: smooth; }
+    body {
+      margin: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font);
+      line-height: 1.6;
+      -webkit-font-smoothing: antialiased;
+    }
+    a { color: inherit; text-decoration: none; }
+    .wrap { width: min(1180px, calc(100vw - 40px)); margin: 0 auto; }
+    .nav {
+      position: sticky; top: 0; z-index: 20;
+      background: rgba(8,17,31,.82);
+      backdrop-filter: blur(16px);
+      border-bottom: 1px solid var(--line);
+    }
+    .nav-inner { height: 66px; display: flex; align-items: center; gap: 30px; }
+    .brand { display: flex; align-items: center; gap: 10px; font-weight: 750; letter-spacing: -.02em; }
+    .brand-mark {
+      width: 34px; height: 34px; border-radius: 10px; display: grid; place-items: center;
+      background: linear-gradient(145deg, #162b4d, #0c1728); border: 1px solid rgba(125,151,255,.3);
+    }
+    .brand span { color: var(--accent); }
+    .nav-links { display: flex; gap: 22px; margin-left: auto; color: var(--muted); font-size: 12px; }
+    .nav-links a:hover { color: var(--text); }
+    .nav-cta {
+      padding: 8px 13px; border: 1px solid rgba(125,151,255,.35); border-radius: 8px;
+      background: rgba(125,151,255,.1); color: #cbd6ff; font-size: 11px; font-weight: 600;
+    }
+    .hero { position: relative; overflow: hidden; padding: 86px 0 60px; }
+    .hero::before {
+      content: ""; position: absolute; inset: -200px 20% auto; height: 600px;
+      background: radial-gradient(closest-side, rgba(94,124,255,.25), transparent);
+      filter: blur(20px); pointer-events: none;
+    }
+    .hero-grid { display: grid; grid-template-columns: 1.12fr .88fr; gap: 46px; align-items: center; position: relative; }
+    .kicker {
+      display: inline-flex; align-items: center; gap: 7px; font-family: var(--mono);
+      font-size: 9px; letter-spacing: .18em; color: #aab8d0;
+      border: 1px solid var(--line); border-radius: 99px; padding: 5px 9px; background: rgba(255,255,255,.03);
+    }
+    .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--green); box-shadow: 0 0 0 4px rgba(67,224,162,.08); }
+    h1 { margin: 20px 0 0; font-size: clamp(38px, 3.8vw, 54px); line-height: 1.08; letter-spacing: -.055em; font-weight: 600; }
+    h1 em { font-style: normal; color: var(--accent); }
+    .hero-copy p { max-width: 520px; margin: 19px 0 0; color: var(--muted); font-size: 14px; line-height: 1.8; }
+    .hero-actions { display: flex; flex-wrap: wrap; gap: 10px; margin-top: 25px; }
+    .btn {
+      display: inline-flex; align-items: center; justify-content: center; gap: 7px;
+      height: 40px; padding: 0 16px; border-radius: 9px; font-size: 12px; font-weight: 650;
+      border: 1px solid var(--line); background: rgba(255,255,255,.04); color: var(--text);
+      transition: .16s;
+    }
+    .btn:hover { border-color: rgba(255,255,255,.22); background: rgba(255,255,255,.08); }
+    .btn-primary { background: var(--accent); border-color: var(--accent); color: #08111f; }
+    .btn-primary:hover { background: #9aacff; border-color: #9aacff; }
+    .hero-note { display: flex; flex-wrap: wrap; gap: 14px; margin-top: 19px; color: #7285a2; font-size: 9px; }
+    .hero-note span { display: flex; align-items: center; gap: 5px; }
+    .hero-visual { position: relative; }
+    .browser {
+      border: 1px solid rgba(255,255,255,.12); border-radius: 16px; overflow: hidden;
+      background: #f4f7fc; box-shadow: 0 35px 80px -30px rgba(0,0,0,.7);
+      transform: perspective(1400px) rotateY(-5deg) rotateX(2deg);
+    }
+    .browser-bar { height: 28px; background: #eef2f8; border-bottom: 1px solid #e1e7f0; display: flex; align-items: center; padding: 0 10px; gap: 5px; }
+    .browser-bar i { width: 6px; height: 6px; border-radius: 50%; background: #d3dae5; }
+    .browser-bar span { margin-left: 7px; color: #8f9caf; font-size: 8px; font-family: var(--mono); }
+    .browser img { display: block; width: 100%; }
+    .float-card {
+      position: absolute; right: -18px; bottom: 26px; background: #101f35;
+      border: 1px solid rgba(125,151,255,.3); border-radius: 11px; padding: 10px 12px;
+      box-shadow: 0 18px 40px rgba(0,0,0,.4); min-width: 160px;
+    }
+    .float-card span { color: var(--muted); font-size: 8px; }
+    .float-card strong { display: block; font-size: 20px; color: var(--green); }
+    .float-card small { color: #7b8ca8; font-size: 7px; }
+    .stats { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding: 15px 0 65px; }
+    .stat { border: 1px solid var(--line); background: rgba(255,255,255,.022); border-radius: 12px; padding: 14px 15px; }
+    .stat strong { display: block; font-size: 24px; letter-spacing: -.04em; font-weight: 600; }
+    .stat span { color: var(--muted); font-size: 9px; }
+    .section { padding: 70px 0; border-top: 1px solid var(--line); }
+    .section-head { max-width: 660px; margin-bottom: 30px; }
+    .section-head .eyebrow { font-family: var(--mono); color: var(--accent); font-size: 9px; letter-spacing: .16em; }
+    .section-head h2 { margin: 8px 0 0; font-size: clamp(28px, 3vw, 40px); line-height: 1.15; letter-spacing: -.04em; font-weight: 600; }
+    .section-head p { margin: 10px 0 0; color: var(--muted); font-size: 12px; line-height: 1.8; }
+    .cards3 { display: grid; grid-template-columns: repeat(3, 1fr); gap: 12px; }
+    .card {
+      background: linear-gradient(180deg, rgba(255,255,255,.035), rgba(255,255,255,.012));
+      border: 1px solid var(--line); border-radius: var(--radius); padding: 20px;
+    }
+    .card .num { font-family: var(--mono); font-size: 9px; color: #637795; }
+    .card h3 { margin: 12px 0 0; font-size: 15px; font-weight: 600; }
+    .card p { margin: 7px 0 0; color: var(--muted); font-size: 10.5px; line-height: 1.75; }
+    .workflow { display: grid; grid-template-columns: repeat(5, 1fr); gap: 8px; margin-top: 8px; }
+    .step { position: relative; padding: 16px 13px; border: 1px solid var(--line); border-radius: 11px; background: rgba(255,255,255,.02); }
+    .step span { font-family: var(--mono); color: var(--accent); font-size: 8px; }
+    .step strong { display: block; margin-top: 7px; font-size: 10px; font-weight: 600; }
+    .step small { display: block; margin-top: 4px; color: #7285a2; font-size: 8px; line-height: 1.5; }
+    .step:not(:last-child)::after { content: "→"; position: absolute; right: -7px; top: 50%; color: #4b5f7c; font-size: 9px; z-index: 2; }
+    .shots { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+    .shot { border: 1px solid var(--line); border-radius: 13px; overflow: hidden; background: #f4f7fc; }
+    .shot img { width: 100%; display: block; }
+    .shot-cap { display: flex; justify-content: space-between; padding: 9px 11px; color: #d3dce9; background: #101b2d; font-size: 9px; }
+    .shot-cap span:last-child { color: #6e819e; font-family: var(--mono); font-size: 8px; }
+    .feature-grid { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+    .feature { border: 1px solid var(--line); border-radius: 12px; padding: 15px; background: rgba(255,255,255,.018); }
+    .feature i { display: inline-flex; width: 28px; height: 28px; border-radius: 7px; background: rgba(125,151,255,.12); color: var(--accent); align-items: center; justify-content: center; font-style: normal; font-size: 12px; }
+    .feature h4 { margin: 9px 0 0; font-size: 11px; font-weight: 600; }
+    .feature p { margin: 4px 0 0; color: var(--muted); font-size: 9px; line-height: 1.6; }
+    .arch { display: grid; grid-template-columns: .9fr 1.1fr; gap: 35px; align-items: center; }
+    pre {
+      margin: 0; padding: 19px; border-radius: 12px; border: 1px solid var(--line);
+      background: #06101e; color: #aec3df; font-family: var(--mono); font-size: 9px; line-height: 1.75;
+      overflow-x: auto;
+    }
+    .arch-list { display: flex; flex-direction: column; gap: 11px; }
+    .arch-list div { display: flex; gap: 9px; }
+    .arch-list i { color: var(--green); font-style: normal; font-family: var(--mono); font-size: 9px; }
+    .arch-list strong { font-size: 10px; font-weight: 600; }
+    .arch-list p { margin: 2px 0 0; color: var(--muted); font-size: 9px; }
+    .cta {
+      margin: 30px 0 70px; padding: 34px; border: 1px solid rgba(125,151,255,.28); border-radius: 18px;
+      background: radial-gradient(600px 240px at 80% 0%, rgba(125,151,255,.16), transparent), #0d1a2d;
+      display: flex; justify-content: space-between; align-items: center; gap: 25px;
+    }
+    .cta h2 { margin: 0; font-size: 25px; letter-spacing: -.03em; }
+    .cta p { margin: 6px 0 0; color: var(--muted); font-size: 10px; }
+    footer { border-top: 1px solid var(--line); padding: 24px 0 35px; color: #6e819e; font-size: 9px; }
+    .footer-inner { display: flex; justify-content: space-between; gap: 15px; }
+    .footer-links { display: flex; gap: 16px; }
+    code { font-family: var(--mono); color: #b8c8df; }
+    @media (max-width: 900px) {
+      .hero-grid, .arch { grid-template-columns: 1fr; }
+      .hero-visual { order: -1; max-width: 640px; }
+      .browser { transform: none; }
+      .stats { grid-template-columns: 1fr 1fr; }
+      .cards3, .feature-grid { grid-template-columns: 1fr 1fr; }
+      .workflow { grid-template-columns: 1fr 1fr; }
+      .step::after { display: none; }
+      .shots { grid-template-columns: 1fr; }
+      .nav-links { display: none; }
+      .cta { flex-direction: column; align-items: flex-start; }
+    }
+    @media (max-width: 560px) {
+      .stats, .cards3, .feature-grid, .workflow { grid-template-columns: 1fr; }
+      .hero { padding-top: 50px; }
+      h1 { font-size: 36px; }
+      .section { padding: 50px 0; }
+      .float-card { display: none; }
+    }
+  </style>
+</head>
+<body>
+  <header class="nav">
+    <div class="wrap nav-inner">
+      <a class="brand" href="#">
+        <span class="brand-mark">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M4 7c0-1.7 1.3-3 3-3h10c1.7 0 3 1.3 3 3v6c0 1.7-1.3 3-3 3h-2.5L10 19v-3H7c-1.7 0-3-1.3-3-3V7Z" fill="#7d97ff"/><circle cx="9" cy="10" r="1" fill="#08111f"/><circle cx="12" cy="10" r="1" fill="#08111f"/><circle cx="15" cy="10" r="1" fill="#08111f"/></svg>
+        </span>
+        Support<span>Pilot</span>
+      </a>
+      <nav class="nav-links">
+        <a href="#why">为什么</a>
+        <a href="#workflow">工作流</a>
+        <a href="#evaluation">评测</a>
+        <a href="#architecture">架构</a>
+      </nav>
+      <a class="nav-cta" href="https://github.com/vitacool/supportpilot" target="_blank" rel="noreferrer">GitHub ↗</a>
+    </div>
+  </header>
+
+  <main>
+    <section class="hero">
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <span class="kicker"><i class="dot"></i> HUMAN-IN-THE-LOOP SUPPORT</span>
+          <h1>让 AI 处理重复问题，<br />让客服专注<em>复杂关系</em>。</h1>
+          <p>SupportPilot 把工单分诊、知识检索、回复草稿、SLA 监控和人工审核放进同一个工作台。每一次自动回复都有引用，每一次 AI 调用都可评测。</p>
+          <div class="hero-actions">
+            <a class="btn btn-primary" href="https://github.com/vitacool/supportpilot" target="_blank" rel="noreferrer">查看源码 →</a>
+            <a class="btn" href="CASE_STUDY.md">阅读 Case Study</a>
+          </div>
+          <div class="hero-note">
+            <span>✓ RAG 引用溯源</span>
+            <span>✓ 工单状态机</span>
+            <span>✓ SLA 与 CSAT</span>
+            <span>✓ 24 条黄金评测</span>
+          </div>
+        </div>
+        <div class="hero-visual">
+          <div class="browser">
+            <div class="browser-bar"><i></i><i></i><i></i><span>supportpilot / inbox</span></div>
+            <img src="screenshots/inbox.png" alt="SupportPilot 客服收件箱" />
+          </div>
+          <div class="float-card"><span>AI 辅助解决率</span><strong>45.8%</strong><small>human-in-the-loop</small></div>
+        </div>
+      </div>
+    </section>
+
+    <div class="wrap stats">
+      <div class="stat"><strong>64</strong><span>演示工单</span></div>
+      <div class="stat"><strong>91%</strong><span>SLA 首次响应达成率</span></div>
+      <div class="stat"><strong>87.5%</strong><span>RAG 检索召回率</span></div>
+      <div class="stat"><strong>4.1 / 5</strong><span>客户满意度 CSAT</span></div>
+    </div>
+
+    <section class="section" id="why">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">WHY THIS PROJECT</div>
+          <h2>企业需要的不是“会聊天的机器人”，<br />而是一条可控的 AI 工作流。</h2>
+          <p>客服场景里，错误回复的成本远高于人工审核成本。SupportPilot 把 AI 放在副驾驶位置：自动准备，但由人决定是否发出。</p>
+        </div>
+        <div class="cards3">
+          <article class="card"><span class="num">01 / HUMAN-IN-THE-LOOP</span><h3>AI 草稿，人工拍板</h3><p>分类、检索、草稿和置信度自动生成；客服可以编辑、采纳、存为内部备注或拒绝。低置信度与高风险工单强制转人工。</p></article>
+          <article class="card"><span class="num">02 / SERVICE LEVEL</span><h3>SLA 不是事后报表</h3><p>按优先级自动计算首次响应与解决时限，工单进入工作台即显示剩余时间、即将超时和已超时，AI 分诊升级优先级时自动重算。</p></article>
+          <article class="card"><span class="num">03 / EVALUATION</span><h3>AI 效果可以回归</h3><p>24 条黄金用例覆盖意图分类、知识召回和引用覆盖。每次修改切片、Embedding 或检索参数，都可以用同一套指标验证。</p></article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="workflow">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">WORKFLOW</div>
+          <h2>从客户提问到可追溯的回复。</h2>
+        </div>
+        <div class="workflow">
+          <div class="step"><span>01</span><strong>客户提交</strong><small>客户门户创建工单</small></div>
+          <div class="step"><span>02</span><strong>AI 分诊</strong><small>分类 / 优先级 / 情绪</small></div>
+          <div class="step"><span>03</span><strong>知识检索</strong><small>向量 + 关键词混合召回</small></div>
+          <div class="step"><span>04</span><strong>人工审核</strong><small>编辑、采纳或拒绝草稿</small></div>
+          <div class="step"><span>05</span><strong>闭环运营</strong><small>SLA / CSAT / 评测</small></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="evaluation">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">PRODUCT SURFACES</div>
+          <h2>一套系统，三个真实工作界面。</h2>
+          <p>客服处理工单、主管看运营指标、客户自助提交问题。数据通过角色和工作区严格隔离。</p>
+        </div>
+        <div class="shots">
+          <div class="shot"><img src="screenshots/copilot.png" alt="AI Copilot 人机协同" /><div class="shot-cap"><span>Agent Workspace · AI Copilot</span><span>inbox</span></div></div>
+          <div class="shot"><img src="screenshots/analytics.png" alt="SLA 与 AI 运营分析" /><div class="shot-cap"><span>Operations · Analytics</span><span>analytics</span></div></div>
+          <div class="shot"><img src="screenshots/evaluation.png" alt="RAG 评测看板" /><div class="shot-cap"><span>Quality · RAG Evaluation</span><span>evaluation</span></div></div>
+          <div class="shot"><img src="screenshots/portal.png" alt="客户自助门户" /><div class="shot-cap"><span>Customer · Portal</span><span>portal</span></div></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section">
+      <div class="wrap">
+        <div class="section-head">
+          <div class="eyebrow">ENGINEERING</div>
+          <h2>不是 Demo 堆功能，而是完整闭环。</h2>
+        </div>
+        <div class="feature-grid">
+          <div class="feature"><i>⌘</i><h4>工单状态机</h4><p>后端强制校验流转，非法状态返回 409，所有变更留痕。</p></div>
+          <div class="feature"><i>◷</i><h4>SLA 引擎</h4><p>四档优先级策略，due date 重算、风险状态与达成率。</p></div>
+          <div class="feature"><i>◎</i><h4>RAG 混合检索</h4><p>pgvector + 关键词，0.70/0.30 融合，引用进入消息模型。</p></div>
+          <div class="feature"><i>◈</i><h4>人机协同</h4><p>置信度、风险规则、采纳/拒绝/自动发送策略。</p></div>
+          <div class="feature"><i>⌁</i><h4>质量评测</h4><p>意图、召回、引用覆盖率与逐条失败原因。</p></div>
+          <div class="feature"><i>▣</i><h4>可部署</h4><p>Docker Compose、pgvector、CI、SQLite/PG 双向量后端。</p></div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section" id="architecture">
+      <div class="wrap arch">
+        <div>
+          <div class="eyebrow" style="font-family:var(--mono);color:var(--accent);font-size:9px;letter-spacing:.16em">ARCHITECTURE</div>
+          <h2 style="margin:8px 0 0;font-size:34px;letter-spacing:-.04em;line-height:1.15">AI 与业务系统的边界，<br />设计得很清楚。</h2>
+          <div class="arch-list" style="margin-top:20px">
+            <div><i>01</i><div><strong>React 工作台</strong><p>客服、主管、客户三种界面共用同一套 API 与权限模型。</p></div></div>
+            <div><i>02</i><div><strong>Express API + 状态机</strong><p>工单、SLA、消息、AI 运行和审计都在服务端受控。</p></div></div>
+            <div><i>03</i><div><strong>RAG / VectorStore</strong><p>SQLite 本地向量或 PostgreSQL + pgvector，异步索引。</p></div></div>
+            <div><i>04</i><div><strong>评测与观测</strong><p>黄金用例、检索日志、AI 运行记录、CSAT。</p></div></div>
+          </div>
+        </div>
+        <pre>Customer Portal ─┐
+Agent Inbox ─────┼── Express API ── SQLite (metadata)
+Admin Analytics ─┘        │
+                          ├── Ticket state machine
+                          ├── SLA engine
+                          ├── RAG / hybrid search
+                          │      ├── pgvector (production)
+                          │      └── SQLite vectors (local)
+                          └── AI runs / eval / audit</pre>
+      </div>
+    </section>
+
+    <div class="wrap">
+      <div class="cta">
+        <div>
+          <h2>代码、架构和 Case Study 都在 GitHub。</h2>
+          <p>Node 24 · React 19 · pgvector · Docker · 10 项集成测试 · 64 张演示工单</p>
+        </div>
+        <a class="btn btn-primary" href="https://github.com/vitacool/supportpilot" target="_blank" rel="noreferrer">打开仓库 →</a>
+      </div>
+    </div>
+  </main>
+
+  <footer>
+    <div class="wrap footer-inner">
+      <span>SupportPilot · 自驱项目 · 演示数据不代表真实业务指标</span>
+      <span class="footer-links"><a href="CASE_STUDY.md">Case Study</a><a href="ARCHITECTURE.md">Architecture</a><a href="https://github.com/vitacool/supportpilot">GitHub</a></span>
+    </div>
+  </footer>
+</body>
+</html>
