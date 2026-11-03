@@ -1,0 +1,10 @@
+node_modules
+apps/*/dist
+data
+.npm-cache
+.tmp
+.edge-profile
+.git
+.env
+docs/screenshots
+*.log

@@ -1,0 +1,13 @@
+node_modules/
+dist/
+.env
+.env.local
+data/
+coverage/
+*.log
+*.tsbuildinfo
+.DS_Store
+.vscode/
+.npm-cache/
+.tmp/
+.edge-profile/

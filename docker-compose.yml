@@ -1,0 +1,38 @@
+services:
+  supportpilot:
+    build: .
+    container_name: supportpilot
+    ports:
+      - "8788:8788"
+    environment:
+      NODE_ENV: production
+      PORT: 8788
+      JWT_SECRET: ${JWT_SECRET:-change-this-jwt-secret-before-production}
+      APP_SECRET: ${APP_SECRET:-change-this-encryption-secret-before-production}
+      VECTOR_DATABASE_URL: postgres://supportpilot:supportpilot@vector-db:5432/supportpilot
+    volumes:
+      - supportpilot-data:/app/data
+    depends_on:
+      vector-db:
+        condition: service_healthy
+    restart: unless-stopped
+
+  vector-db:
+    image: pgvector/pgvector:pg17
+    container_name: supportpilot-vector-db
+    environment:
+      POSTGRES_USER: supportpilot
+      POSTGRES_PASSWORD: supportpilot
+      POSTGRES_DB: supportpilot
+    volumes:
+      - supportpilot-vectors:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U supportpilot -d supportpilot"]
+      interval: 5s
+      timeout: 3s
+      retries: 12
+    restart: unless-stopped
+
+volumes:
+  supportpilot-data:
+  supportpilot-vectors:
